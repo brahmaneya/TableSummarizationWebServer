@@ -1,11 +1,20 @@
-
+package servlets;
 
 import static java.lang.System.out;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.ServletConfig;
@@ -14,6 +23,8 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.apache.tomcat.util.http.fileupload.IOUtils;
 
 import solvers.NonStarCountSolvers;
 import solvers.Rule;
@@ -28,7 +39,7 @@ import dataextraction.TableInfo;
 @WebServlet("/MarketingSDD")
 public class MarketingSDD extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-       
+    String message;   
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -36,22 +47,93 @@ public class MarketingSDD extends HttpServlet {
         super();
         // TODO Auto-generated constructor stub
     }
+    
+    public static String convertStreamToString(java.io.InputStream is) {
+        java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A");
+        return s.hasNext() ? s.next() : "";
+    }
 
     public void init(ServletConfig config) throws ServletException {
     	String[] args = new String[5]; // This and things that use args need to be moved.
     	
     	TableInfo fullTable = null;
-		try {
-			fullTable = Marketing.parseData();
+    	//InputStream input = Thread.currentThread().getContextClassLoader().getResourceAsStream(Marketing.DATAFILELOCATION);
+    	InputStream input = null;
+    	try {
+    		/*
+    		input = getClass().getClassLoader().getResourceAsStream("marketing.data.ser");
+    		ObjectInputStream oi = new ObjectInputStream(input);
+    		message = "damn";
+        	fullTable = (TableInfo) oi.readObject();
+        	message = "damn2";
+        	message = ((Integer)fullTable.contents.size()).toString();
+    		oi.close();
+    		*/
+    		
+    		input = getClass().getClassLoader().getResourceAsStream("marketing.data.txt");
+    		message = convertStreamToString(input);
+    		List<List<String>> dictionary = new ArrayList<List<String>>();
+    		List<Map<String, Integer>> reverseDictionary = new ArrayList<Map<String, Integer>>();
+    		List<List<Integer>> contents = new ArrayList<List<Integer>>();
+    		String[] lines = message.split("\n");
+    		boolean firstLine = true;
+    		for (String line : lines) {
+				String[] vals = line.split(" ");
+				if (firstLine) {
+    				for (int i = 0; i < vals.length; i++) {
+    					dictionary.add(new ArrayList<String>());
+    					reverseDictionary.add(new HashMap<String, Integer>());
+    				}
+    				firstLine = false;
+				}
+				List<Integer> tuple = new ArrayList<Integer>(vals.length);
+				for (int i = 0; i < vals.length; i++) {
+					final String value = vals[i];
+					Map<String, Integer> columnDictionary = reverseDictionary.get(i);
+					if (columnDictionary.containsKey(value)) {
+						tuple.add(columnDictionary.get(value));
+					} else {
+						columnDictionary.put(value, columnDictionary.keySet().size());
+						dictionary.get(i).add(value);
+						tuple.add(columnDictionary.get(value));
+					}
+				}
+				contents.add(tuple);
+    		}
+    		fullTable = new TableInfo(dictionary, reverseDictionary, contents);
+    		Marketing.addNames(fullTable);
+    		message = Marketing.name();
+    		message = fullTable.contents.get(11).toString();
+    		
+    	} catch (Exception e) {
+    		e.printStackTrace();
+    	}
+    	
+    	
+    	
+    	
+    	/*
+    	try {
+			BufferedReader br = new BufferedReader(new FileReader(Marketing.DATAFILELOCATION));
+			message = br.readLine();
 		} catch (IOException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		//out.println(System.currentTimeMillis() - timer);
+		
+    	
+		try {
+			fullTable = Marketing.parseData();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 		List<Integer> columns = new ArrayList<Integer>();
 		final Integer firstNumColumns = 7;//9;
 		for (int i = 1; i < firstNumColumns; i++) {
 			columns.add(i);
 		}
+		
 		TableInfo table = fullTable.getSubTable(columns);
 		Integer ruleNums = Integer.parseInt(args[0]); 
 		Integer maxRuleScore = Integer.parseInt(args[1]); // program input
@@ -163,6 +245,7 @@ public class MarketingSDD extends HttpServlet {
 		}
 		solutionString = solutionString + "]";
 		out.println(solutionString);
+    	*/
     }
 
 	/**
@@ -173,7 +256,7 @@ public class MarketingSDD extends HttpServlet {
 
 	      // Actual logic goes here.
 	    PrintWriter pw = response.getWriter();
-	    pw.println("<h1>" + "Hi" + "</h1>");
+	    pw.println("<h1>" + message + "</h1>");
 	}
 
 	/**
