@@ -54,6 +54,7 @@ public class MarketingSDD extends HttpServlet {
     }
 
     public void init(ServletConfig config) throws ServletException {
+    	message = "Hi";
     	String[] args = new String[5]; // This and things that use args need to be moved.
     	
     	TableInfo fullTable = null;
@@ -71,11 +72,11 @@ public class MarketingSDD extends HttpServlet {
     		*/
     		
     		input = getClass().getClassLoader().getResourceAsStream("marketing.data.txt");
-    		message = convertStreamToString(input);
+    		String data = convertStreamToString(input);
     		List<List<String>> dictionary = new ArrayList<List<String>>();
     		List<Map<String, Integer>> reverseDictionary = new ArrayList<Map<String, Integer>>();
     		List<List<Integer>> contents = new ArrayList<List<Integer>>();
-    		String[] lines = message.split("\n");
+    		String[] lines = data.split("\n");
     		boolean firstLine = true;
     		for (String line : lines) {
 				String[] vals = line.split(" ");
@@ -101,33 +102,11 @@ public class MarketingSDD extends HttpServlet {
 				contents.add(tuple);
     		}
     		fullTable = new TableInfo(dictionary, reverseDictionary, contents);
-    		Marketing.addNames(fullTable);
-    		message = Marketing.name();
-    		message = fullTable.contents.get(11).toString();
-    		
+    		Marketing.addNames(fullTable);    		
     	} catch (Exception e) {
     		e.printStackTrace();
     	}
-    	
-    	
-    	
-    	
-    	/*
-    	try {
-			BufferedReader br = new BufferedReader(new FileReader(Marketing.DATAFILELOCATION));
-			message = br.readLine();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-    	
-		try {
-			fullTable = Marketing.parseData();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
+    		
 		List<Integer> columns = new ArrayList<Integer>();
 		final Integer firstNumColumns = 7;//9;
 		for (int i = 1; i < firstNumColumns; i++) {
@@ -135,7 +114,7 @@ public class MarketingSDD extends HttpServlet {
 		}
 		
 		TableInfo table = fullTable.getSubTable(columns);
-		Integer ruleNums = Integer.parseInt(args[0]); 
+		/*Integer ruleNums = Integer.parseInt(args[0]); 
 		Integer maxRuleScore = Integer.parseInt(args[1]); // program input
 		final Scorer scorer; // program input
 		switch(args[2]) {
@@ -155,6 +134,7 @@ public class MarketingSDD extends HttpServlet {
 				scorer = new Rule.sizeScorer();
 				break;
 		}
+		
 		String ruleString = args[3];
 		ruleString = ruleString.substring(1, ruleString.length() - 1);
 		String[] vals = ruleString.split(",");
@@ -252,22 +232,22 @@ public class MarketingSDD extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		response.setContentType("text/html");
-
-	      // Actual logic goes here.
-	    PrintWriter pw = response.getWriter();
-	    pw.println("<h1>" + message + "</h1>");
-	}
+		//response.setContentType("text/html");
+		response.setContentType("application/json");
+		PrintWriter pw = response.getWriter();
+	    //pw.println("<h1>" + message + "</h1>");
+		pw.print("[1, 2, 4, 5]");
+    }
 
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		response.setContentType("text/html");
-
-	      // Actual logic goes here.
-	    PrintWriter pw = response.getWriter();
-	    pw.println("<h1>" + "Hi" + "</h1>");
+		//response.setContentType("text/html");
+		response.setContentType("application/json");
+		PrintWriter pw = response.getWriter();
+	    //pw.println("<h1>" + message + "</h1>");
+		pw.print("[1, 2, 4, 5]");
 	}
 
 }
