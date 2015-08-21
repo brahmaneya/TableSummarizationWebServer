@@ -154,7 +154,6 @@ public class MarketingSDD extends HttpServlet {
 		final List<Integer> ignoreCols = new ArrayList<Integer>();
 		final List<Integer> forceCols = new ArrayList<Integer>();
 		String coloptsString = args[4];
-		coloptsString = coloptsString.substring(1, coloptsString.length() - 1);
 		String[] colopts = coloptsString.split(",");
 		for (String colopt : colopts) {
 			int colonLocation = colopt.lastIndexOf(":");
@@ -265,7 +264,41 @@ public class MarketingSDD extends HttpServlet {
 		BufferedReader br = request.getReader();
 		String line = "";
 		line = br.readLine();
+		line = line.substring(1, line.length() - 1);
+		line = line + ",";
+		int k = Integer.parseInt(line.substring(4 + line.indexOf("\"k\":"), line.indexOf(",", line.indexOf("\"k\":"))));
+		int mw = Integer.parseInt(line.substring(5 + line.indexOf("\"mw\":"), line.indexOf(",", line.indexOf("\"mw\":"))));
+		int rowNo = Integer.parseInt(line.substring(8 + line.indexOf("\"rowNo\":"), line.indexOf(",", line.indexOf("\"rowNo\":"))));
+		String W = line.substring(5 + line.indexOf("\"W\":\""), line.indexOf("\",", line.indexOf("\"W\":\"")));
+		String coloptString = line.substring(10 + line.indexOf("\"colopt\":{"), line.indexOf("}", line.indexOf("\"colopt\":{")));
+		coloptString.replaceAll("\"", "");
+		
+		String rulesString = line.substring(9 + line.indexOf("\"rules\":["), 1 + line.indexOf("}]", line.indexOf("\"rules\":[")));
+		rulesString = rulesString.substring(1, rulesString.length() - 1);
+		String[] rulesStringsArray = rulesString.split("\\},\\{");
+		List<String> valsList = new ArrayList<String>();
+		List<Integer> depthsList = new ArrayList<Integer>();
+		List<Boolean> expandedsList = new ArrayList<Boolean>(); 
+		for (String s : rulesStringsArray) {
+			s = s + ",";
+			valsList.add(s.substring(1 + s.indexOf("["), s.indexOf("]")));
+			depthsList.add(Integer.parseInt(s.substring(8 + s.indexOf("\"depth\":"), s.indexOf(",", s.indexOf("\"depth\":")))));
+			expandedsList.add(s.substring(11 + s.indexOf("\"expanded\":"), 12 + s.indexOf("\"expanded\":")).equals("1"));
+		}
+		out.println(k);
+		out.println(mw);
+		out.println(W);
+		out.println(rowNo);
+		out.println(coloptString);
+		out.println(valsList.toString());
+		out.println(depthsList.toString());
+		out.println(expandedsList.toString());
+		// row and depthStr can be generated on the fly
+		//List<String> ruleStringsList = new ArrayList<String>();
+		out.println(rowNo);
+		out.println(rulesString);
 		out.println(line);
+		
 	}
 
 }
