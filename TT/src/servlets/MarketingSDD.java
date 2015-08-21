@@ -262,6 +262,10 @@ public class MarketingSDD extends HttpServlet {
 		PrintWriter pw = response.getWriter();
 	    //pw.println("<h1>" + message + "</h1>");
 		pw.print("[1, 2, 4, 5]");
+		BufferedReader br = request.getReader();
+		String line = "";
+		line = br.readLine();
+		out.println(line);
 	}
 
 }
