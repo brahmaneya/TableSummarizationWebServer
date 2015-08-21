@@ -227,11 +227,24 @@ public class MarketingSDD extends HttpServlet {
 		out.println(solutionString);
     	*/
     }
-
+    
+    public void doOptions(HttpServletRequest req, HttpServletResponse resp)
+            throws IOException {
+        //The following are CORS headers. Max age informs the 
+        //browser to keep the results of this call for 1 day.
+        resp.setHeader("Access-Control-Allow-Origin", "*");
+        resp.setHeader("Access-Control-Allow-Methods", "GET, POST");
+        resp.setHeader("Access-Control-Allow-Headers", "Content-Type");
+        resp.setHeader("Access-Control-Max-Age", "86400");
+        //Tell the browser what requests we allow.
+        resp.setHeader("Allow", "GET, HEAD, POST, TRACE, OPTIONS");
+    }
+    
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    	response.setHeader("Access-Control-Allow-Origin", "*");
 		//response.setContentType("text/html");
 		response.setContentType("application/json");
 		PrintWriter pw = response.getWriter();
@@ -243,6 +256,7 @@ public class MarketingSDD extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		response.setHeader("Access-Control-Allow-Origin", "*");
 		//response.setContentType("text/html");
 		response.setContentType("application/json");
 		PrintWriter pw = response.getWriter();
