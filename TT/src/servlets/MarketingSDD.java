@@ -147,12 +147,9 @@ public class MarketingSDD extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.setHeader("Access-Control-Allow-Origin", "*");
-		//response.setContentType("text/html");
 		response.setContentType("application/json");
 		PrintWriter pw = response.getWriter();
-	    //pw.println("<h1>" + message + "</h1>");
-		pw.print("[1, 2, 4, 5]");
-		BufferedReader br = request.getReader();
+	    BufferedReader br = request.getReader();
 		String line = "";
 		line = br.readLine();
 		line = line.substring(1, line.length() - 1);
@@ -178,12 +175,13 @@ public class MarketingSDD extends HttpServlet {
 		}
 		if (expandedsList.get(rowNo)) {
 			final int depth = depthsList.get(rowNo);
-			while (depthsList.get(rowNo + 1) > depth) {
+			expandedsList.set(rowNo, false);
+			while (depthsList.size() > rowNo + 1 && depthsList.get(rowNo + 1) > depth) {
 				valsList.remove(rowNo + 1);
 				depthsList.remove(rowNo + 1);
 				expandedsList.remove(rowNo + 1);
 			}
-			//pw.print(rulesJSONString(valsList, depthsList, expandedsList));
+			pw.print(rulesJSONString(valsList, depthsList, expandedsList));
 			out.print(rulesJSONString(valsList, depthsList, expandedsList));
 		} else {
 			final Scorer scorer; // program input
@@ -219,9 +217,6 @@ public class MarketingSDD extends HttpServlet {
 					}
 				}
 			}
-			////// check here is we find valid rule. due to " etc.
-			
-			
 			Rule rule = new Rule(ruleVals);
 			final List<Integer> defaultCols = new ArrayList<Integer>();
 			final List<Integer> ignoreCols = new ArrayList<Integer>();
@@ -285,24 +280,9 @@ public class MarketingSDD extends HttpServlet {
 				expandedsList.add(rowNo + 1, false);
 				depthsList.add(rowNo + 1, depth);
 			}
-			//pw.print(rulesJSONString(valsList, depthsList, expandedsList));	    	
+			pw.print(rulesJSONString(valsList, depthsList, expandedsList));	    	
 			out.print(rulesJSONString(valsList, depthsList, expandedsList));	    	
 		}
-		
-		/*
-		out.println(k);
-		out.println(mw);
-		out.println(W);
-		out.println(rowNo);
-		out.println(coloptString);
-		out.println(valsList.toString());
-		out.println(depthsList.toString());
-		out.println(expandedsList.toString());
-		out.println(rowNo);
-		out.println(rulesString);
-		out.println(line);
-		out.println(rulesJSONString(valsList, depthsList, expandedsList));	
-		*/	
 	}
 	
 	public String createValString (Rule rule) {
@@ -330,19 +310,19 @@ public class MarketingSDD extends HttpServlet {
 			for (int i = 0; i < depths.get(rowNo); i++) {
 				depthStr = depthStr + ">";
 			}
-			answer = answer + "\'depthStr\':\'" + depthStr + "\'";
+			answer = answer + "\"depthStr\":\"" + depthStr + "\"";
 			answer = answer + ",";
 			
-			answer = answer + "\'row\':" + rowNo;
+			answer = answer + "\"row\":" + rowNo;
 			answer = answer + ",";
 
-			answer = answer + "\'depth\':" + depths.get(rowNo);
+			answer = answer + "\"depth\":" + depths.get(rowNo);
 			answer = answer + ",";
 			
-			answer = answer + "\'expanded\':" + (expandeds.get(rowNo) ? 1 : 0);
+			answer = answer + "\"expanded\":" + (expandeds.get(rowNo) ? 1 : 0);
 			answer = answer + ",";
 			
-			answer = answer + "\'vals\':[" + val + "]}";
+			answer = answer + "\"vals\":[" + val + "]}";
 			rowNo++;
 		}
 		answer = answer + "]";
