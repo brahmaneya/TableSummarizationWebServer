@@ -112,6 +112,8 @@ public class MarketingSDD extends HttpServlet {
     		String[] lines = data.split("\n");
     		boolean firstLine = true;
     		for (String line : lines) {
+    			line = line.replaceAll("\"\"", "\"-\"");
+    			line = line.replaceAll("\"", "");
 				String[] vals = line.split(",");
 				if (firstLine) {
     				for (int i = 0; i < vals.length; i++) {
@@ -141,8 +143,7 @@ public class MarketingSDD extends HttpServlet {
     		for (int i = 1; i < firstNumColumns; i++) {
     			columns.add(i);
     		}
-    		
-    		donationsTable = fullTable.getSubTable(columns);
+        	donationsTable = fullTable.getSubTable(columns);
     	} catch (Exception e) {
     		e.printStackTrace();
     	}
@@ -252,16 +253,13 @@ public class MarketingSDD extends HttpServlet {
 				final String valString = vals[col];
 				ruleVals.add(-1);
 				for (int val = 0; val < table.dictionary.get(col).size(); val++) {
-					out.println(col);
-					out.println(val);
-					out.println(table.dictionary.get(col).toString());
-					out.println(table.names.get(col).toString());
 					if (table.getName(col, val).equals(valString)) {
 						ruleVals.set(col, val);
 						break;
 					}
 				}
 			}
+			out.println(ruleVals.toString());
 			Rule rule = new Rule(ruleVals);
 			final List<Integer> defaultCols = new ArrayList<Integer>();
 			final List<Integer> ignoreCols = new ArrayList<Integer>();
