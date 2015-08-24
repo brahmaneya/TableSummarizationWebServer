@@ -29,6 +29,7 @@ import org.apache.tomcat.util.http.fileupload.IOUtils;
 import solvers.NonStarCountSolvers;
 import solvers.Rule;
 import solvers.Scorer;
+import dataextraction.Donations;
 import dataextraction.Marketing;
 import dataextraction.SampleHandler;
 import dataextraction.TableInfo;
@@ -134,7 +135,7 @@ public class MarketingSDD extends HttpServlet {
 				contents.add(tuple);
     		}
     		TableInfo fullTable = new TableInfo(dictionary, reverseDictionary, contents);
-    		Marketing.addNames(fullTable);    	
+    		Donations.addNames(fullTable);    	
     		List<Integer> columns = new ArrayList<Integer>();
     		final Integer firstNumColumns = 7;//9;
     		for (int i = 1; i < firstNumColumns; i++) {
@@ -177,7 +178,7 @@ public class MarketingSDD extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		TableInfo table = marketTable; // change this for different databases.
+		TableInfo table; // change this for different databases.
 		response.setHeader("Access-Control-Allow-Origin", "*");
 		response.setContentType("application/json");
 		PrintWriter pw = response.getWriter();
@@ -186,6 +187,14 @@ public class MarketingSDD extends HttpServlet {
 		line = br.readLine();
 		line = line.substring(1, line.length() - 1);
 		line = line + ",";
+		final String dataset = line.substring(11 + line.indexOf("\"dataset\":"), line.indexOf("\",", line.indexOf("\"dataset\":")));
+		if (dataset.equals("marketing")) {
+			table = marketTable;
+		} else if (dataset.equals("donations")) {
+			table = donationsTable;
+		} else {
+			table = null;
+		}
 		final int ruleNums = Integer.parseInt(line.substring(4 + line.indexOf("\"k\":"), line.indexOf(",", line.indexOf("\"k\":"))));
 		final int maxRuleScore = Integer.parseInt(line.substring(5 + line.indexOf("\"mw\":"), line.indexOf(",", line.indexOf("\"mw\":"))));
 		final int rowNo = Integer.parseInt(line.substring(8 + line.indexOf("\"rowNo\":"), line.indexOf(",", line.indexOf("\"rowNo\":"))));
@@ -243,6 +252,10 @@ public class MarketingSDD extends HttpServlet {
 				final String valString = vals[col];
 				ruleVals.add(-1);
 				for (int val = 0; val < table.dictionary.get(col).size(); val++) {
+					out.println(col);
+					out.println(val);
+					out.println(table.dictionary.get(col).toString());
+					out.println(table.names.get(col).toString());
 					if (table.getName(col, val).equals(valString)) {
 						ruleVals.set(col, val);
 						break;
