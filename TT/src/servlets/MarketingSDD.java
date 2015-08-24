@@ -139,7 +139,7 @@ public class MarketingSDD extends HttpServlet {
     		TableInfo fullTable = new TableInfo(dictionary, reverseDictionary, contents);
     		Donations.addNames(fullTable);    	
     		List<Integer> columns = new ArrayList<Integer>();
-    		final Integer firstNumColumns = 7;//9;
+    		final Integer firstNumColumns = 9;//9;
     		for (int i = 1; i < firstNumColumns; i++) {
     			columns.add(i);
     		}
@@ -196,6 +196,21 @@ public class MarketingSDD extends HttpServlet {
 		} else {
 			table = null;
 		}
+		final String purpose = line.substring(11 + line.indexOf("\"purpose\":"), line.indexOf("\",", line.indexOf("\"purpose\":")));
+		if (purpose.equals("getColumns")) {
+			String answer = "[";
+			for (int col = 0; col < table.dictionary.size(); col++) {
+				if (col > 0) {
+					answer = answer + ",";
+				}
+				answer = answer + "\"" + table.names.get(col).get("column") + "\"";
+			}
+			answer = answer + "]";
+			out.println(answer);
+			pw.print(answer);
+			return;
+		}
+		
 		final int ruleNums = Integer.parseInt(line.substring(4 + line.indexOf("\"k\":"), line.indexOf(",", line.indexOf("\"k\":"))));
 		final int maxRuleScore = Integer.parseInt(line.substring(5 + line.indexOf("\"mw\":"), line.indexOf(",", line.indexOf("\"mw\":"))));
 		final int rowNo = Integer.parseInt(line.substring(8 + line.indexOf("\"rowNo\":"), line.indexOf(",", line.indexOf("\"rowNo\":"))));
@@ -259,7 +274,6 @@ public class MarketingSDD extends HttpServlet {
 					}
 				}
 			}
-			out.println(ruleVals.toString());
 			Rule rule = new Rule(ruleVals);
 			final List<Integer> defaultCols = new ArrayList<Integer>();
 			final List<Integer> ignoreCols = new ArrayList<Integer>();
