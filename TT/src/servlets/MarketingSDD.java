@@ -40,7 +40,8 @@ import dataextraction.TableInfo;
 public class MarketingSDD extends HttpServlet {
 	private static final long serialVersionUID = 1L;
     String message;  
-    TableInfo table;
+    TableInfo marketTable;
+    TableInfo donationsTable;
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -55,24 +56,9 @@ public class MarketingSDD extends HttpServlet {
     }
 
     public void init(ServletConfig config) throws ServletException {
-    	message = "Hi";
-    	String[] args = new String[5]; // This and things that use args need to be moved.
-    	
-    	TableInfo fullTable = null;
-    	//InputStream input = Thread.currentThread().getContextClassLoader().getResourceAsStream(Marketing.DATAFILELOCATION);
-    	InputStream input = null;
     	try {
-    		/*
-    		input = getClass().getClassLoader().getResourceAsStream("marketing.data.ser");
-    		ObjectInputStream oi = new ObjectInputStream(input);
-    		message = "damn";
-        	fullTable = (TableInfo) oi.readObject();
-        	message = "damn2";
-        	message = ((Integer)fullTable.contents.size()).toString();
-    		oi.close();
-    		*/
-    		
-    		input = getClass().getClassLoader().getResourceAsStream("marketing.data.txt");
+    		// Add alternative market input here?
+    		InputStream input = getClass().getClassLoader().getResourceAsStream("marketing.data.txt");
     		String data = convertStreamToString(input);
     		List<List<String>> dictionary = new ArrayList<List<String>>();
     		List<Map<String, Integer>> reverseDictionary = new ArrayList<Map<String, Integer>>();
@@ -102,19 +88,64 @@ public class MarketingSDD extends HttpServlet {
 				}
 				contents.add(tuple);
     		}
-    		fullTable = new TableInfo(dictionary, reverseDictionary, contents);
-    		Marketing.addNames(fullTable);    		
+    		TableInfo fullTable = new TableInfo(dictionary, reverseDictionary, contents);
+    		Marketing.addNames(fullTable);    	
+    		List<Integer> columns = new ArrayList<Integer>();
+    		final Integer firstNumColumns = 7;//9;
+    		for (int i = 1; i < firstNumColumns; i++) {
+    			columns.add(i);
+    		}
+    		
+    		marketTable = fullTable.getSubTable(columns);
     	} catch (Exception e) {
     		e.printStackTrace();
     	}
+    	
+    	try {    		
+    		// Add alternative market input here?
+    		InputStream input = getClass().getClassLoader().getResourceAsStream("contributions.reduced.fec.2014.csv");;
+        	String data = convertStreamToString(input);
+    		List<List<String>> dictionary = new ArrayList<List<String>>();
+    		List<Map<String, Integer>> reverseDictionary = new ArrayList<Map<String, Integer>>();
+    		List<List<Integer>> contents = new ArrayList<List<Integer>>();
+    		String[] lines = data.split("\n");
+    		boolean firstLine = true;
+    		for (String line : lines) {
+				String[] vals = line.split(",");
+				if (firstLine) {
+    				for (int i = 0; i < vals.length; i++) {
+    					dictionary.add(new ArrayList<String>());
+    					reverseDictionary.add(new HashMap<String, Integer>());
+    				}
+    				firstLine = false;
+				}
+				List<Integer> tuple = new ArrayList<Integer>(vals.length);
+				for (int i = 0; i < vals.length; i++) {
+					final String value = vals[i];
+					Map<String, Integer> columnDictionary = reverseDictionary.get(i);
+					if (columnDictionary.containsKey(value)) {
+						tuple.add(columnDictionary.get(value));
+					} else {
+						columnDictionary.put(value, columnDictionary.keySet().size());
+						dictionary.get(i).add(value);
+						tuple.add(columnDictionary.get(value));
+					}
+				}
+				contents.add(tuple);
+    		}
+    		TableInfo fullTable = new TableInfo(dictionary, reverseDictionary, contents);
+    		Marketing.addNames(fullTable);    	
+    		List<Integer> columns = new ArrayList<Integer>();
+    		final Integer firstNumColumns = 7;//9;
+    		for (int i = 1; i < firstNumColumns; i++) {
+    			columns.add(i);
+    		}
     		
-		List<Integer> columns = new ArrayList<Integer>();
-		final Integer firstNumColumns = 7;//9;
-		for (int i = 1; i < firstNumColumns; i++) {
-			columns.add(i);
-		}
-		
-		table = fullTable.getSubTable(columns);
+    		donationsTable = fullTable.getSubTable(columns);
+    	} catch (Exception e) {
+    		e.printStackTrace();
+    	}
+    	
 		
     }
     
@@ -146,6 +177,7 @@ public class MarketingSDD extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		TableInfo table = marketTable; // change this for different databases.
 		response.setHeader("Access-Control-Allow-Origin", "*");
 		response.setContentType("application/json");
 		PrintWriter pw = response.getWriter();
@@ -275,7 +307,7 @@ public class MarketingSDD extends HttpServlet {
 			final int depth = depthsList.get(rowNo) + 1;
 			for (Rule solRule : solutionSet) {	
 				// check order here, maybe it should be reversed. 
-				final String solString = createValString(solRule);
+				final String solString = createValString(solRule, table);
 				valsList.add(rowNo + 1, solString);
 				expandedsList.add(rowNo + 1, false);
 				depthsList.add(rowNo + 1, depth);
@@ -285,13 +317,13 @@ public class MarketingSDD extends HttpServlet {
 		}
 	}
 	
-	public String createValString (Rule rule) {
+	public String createValString (Rule rule, TableInfo currentTable) {
 		String answer = "";
-		for (Integer col = 0; col < table.names.size(); col++) {
+		for (Integer col = 0; col < currentTable.names.size(); col++) {
 			if (col > 0) {
 				answer = answer + ",";
 			}
-			answer = answer + "\"" + table.getName(col, rule.get(col)) + "\"";
+			answer = answer + "\"" + currentTable.getName(col, rule.get(col)) + "\"";
 		}
 		answer = answer + "," + rule.count;
 		answer = answer + "," + rule.score;
