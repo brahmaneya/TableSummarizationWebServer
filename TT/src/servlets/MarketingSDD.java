@@ -139,7 +139,7 @@ public class MarketingSDD extends HttpServlet {
     		TableInfo fullTable = new TableInfo(dictionary, reverseDictionary, contents);
     		Donations.addNames(fullTable);    	
     		List<Integer> columns = new ArrayList<Integer>();
-    		final Integer firstNumColumns = 9;//9;
+    		final Integer firstNumColumns = 11;//9;
     		for (int i = 1; i < firstNumColumns; i++) {
     			columns.add(i);
     		}
@@ -261,8 +261,9 @@ public class MarketingSDD extends HttpServlet {
 			}
 			
 			String ruleString = valsList.get(rowNo);
-			ruleString = ruleString.substring(1, ruleString.length() - 1);
-			String[] vals = ruleString.split("\",\"");
+			ruleString = ruleString.replaceAll("\"", "");
+			out.println(ruleString);
+			String[] vals = ruleString.split(",");
 			List<Integer> ruleVals = new ArrayList<Integer>();
 			for (int col = 0; col < table.dictionary.size(); col++) {
 				final String valString = vals[col];
